@@ -7,6 +7,9 @@
 #include "G2D.h"
 using namespace std;
 
+int score = 0;
+int *points = &score ;
+
 struct Cible
 {
     V2 pointA;
@@ -24,19 +27,19 @@ struct Rangee
             if (c.active) return false;
         return true;
     }
-
     void reactiver()
     {
         for (Cible& c : cibles)
             c.active = true;
+        int CibleRadius = 10;
+
     }
 };
 
-// ← NOUVEAU
+
 struct Bumper
 {
     V2 pos;
-    bool active = true;
     float T0 = -10.0f; // datte de al derniere fois ou on touche  (ici si on a jamais touché)
     int  BumperRadius = 40;
     int  RBig = 70; // rayon max de l anim
@@ -60,9 +63,32 @@ struct GameData
     vector<V2> LP{ V2(595, 550), V2(585, 596), V2(542, 638), V2(476, 671), V2(392, 692), V2(300, 700), V2(207, 692),
         V2(123, 671), V2(57, 638), V2(14, 596), V2(5, 550), V2(5,5), V2(595,5), V2(595,550) };
 
-    // ← MODIFIÉ : vector de Bumper au lieu de V2
+    //   : vector de Bumper 
     vector<Bumper> BumperPos{ {V2(200, 400)}, {V2(400, 400)}, {V2(300, 550)} };
     int BumperRadius = 40;
+
+   
+
+    //   : vector des cibles   on vas les mettr en format seg donc a b --> A-------B
+    vector<Cible> CiblePos{
+        // Rangée haute
+        {V2(50,  150), V2(150, 150)},
+        {V2(220, 150), V2(320, 150)},
+        {V2(400, 150), V2(500, 150)},
+
+        // Rangée milieu-haute (décalée)
+        {V2(100, 280), V2(200, 280)},
+        {V2(280, 280), V2(380, 280)},
+        {V2(430, 280), V2(530, 280)},
+
+        // Rangée milieu-basse
+        {V2(50,  400), V2(180, 400)},
+        {V2(250, 400), V2(350, 400)},
+        {V2(420, 400), V2(550, 400)},
+
+       
+    
+    };
 
     vector<Rangee> rangees;
 
@@ -108,9 +134,32 @@ void render(const GameData& G)
 {
     G2D::clearScreen(Color::Black);
     G2D::drawStringFontMono(V2(80, G.HeightPix - 70), string("Super Flipper"), 50, 5, Color::Blue);
-    G2D::drawCircle(G.BallPos, G.BallRadius, Color::Red, true);
+    G2D::drawStringFontMono(V2(80, 60), to_string(score), 30, 3, Color::White);
 
-    // ← MODIFIÉ : couleur selon active
+
+    G2D::drawCircle(G.BallPos, G.BallRadius, Color::Red, true); //balle jouer 
+
+
+    for (const Cible& c : G.CiblePos)
+    {
+        if (c.active)
+        {
+            G2D::drawLine(c.pointA, c.pointB, Color::Yellow);
+            G2D::drawLine(c.pointA + V2(0, 1), c.pointB + V2(0, 1), Color::Yellow);
+            G2D::drawLine(c.pointA + V2(0, 2), c.pointB + V2(0, 2), Color::Yellow);
+        }
+
+        else 
+        {
+        G2D::drawLine(c.pointA, c.pointB, Color::Red);
+        G2D::drawLine(c.pointA + V2(0, 1), c.pointB + V2(0, 1), Color::Red);
+        G2D::drawLine(c.pointA + V2(0, 2), c.pointB + V2(0, 2), Color::Red);
+        }
+    }
+
+
+
+//bumper couleur
     for (const Bumper& b : G.BumperPos)
     {
         float t = G2D::elapsedTimeFromStartSeconds();
@@ -118,20 +167,23 @@ void render(const GameData& G)
 
         if (dt >= 0.0f && dt <= 1.0f) // pendant 1 seconde : flash animé
         {
-            // r(t) = RBig - (RBig - RBumper) * dt
+            // r(t) = RBig - (RBig - RBumper) * dt 
             float r = b.RBig - (b.RBig - b.BumperRadius) * dt;
             G2D::drawCircle(b.pos, r, Color::Red, true); // cercle rouge grand
             G2D::drawCircle(b.pos, b.BumperRadius - 5, Color::Blue, true); // cœur bleu
         }
-        else if (b.active)
-        {
-            G2D::drawCircle(b.pos, b.BumperRadius, Color::Blue, true); // normal
-        }
+        
         else
         {
-            G2D::drawCircle(b.pos, b.BumperRadius, Color::Red, true);  // désactivé
+            G2D::drawCircle(b.pos, b.BumperRadius, Color::Blue, true);  // désactivé
         }
     }
+
+
+
+
+
+
 
 
 
@@ -167,6 +219,15 @@ void render(const GameData& G)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
 
 float dot(V2 vecA, V2 vecB) {
     return vecA.x * vecB.x + vecA.y * vecB.y;
@@ -209,13 +270,15 @@ void Logic(GameData& G)
     //       Collision avec les bumprs
     for (Bumper& b : G.BumperPos)
     {
-        if (!b.active) continue;
+        
+       
 
         if (CollisionCirCir(G.BallPos, G.BallRadius, b.pos, G.BumperRadius))
         {
+            *points += 100;
+
             V2 normal = G.BallPos - b.pos;
             G.BallMove = Rebond(G.BallMove, normal);
-            b.active = false; // désactive le bumper
 
             //declare le moment ou on touche 
             b.T0 = G2D::elapsedTimeFromStartSeconds();  // timing demare
@@ -225,35 +288,48 @@ void Logic(GameData& G)
         }
     }
 
-    // Si tous les bumpers sont désactivés → on réactive tout
-    bool tousDesactives = true;
-    for (Bumper& b : G.BumperPos)
-        if (b.active) { tousDesactives = false; break; }
-
-    if (tousDesactives)
-        for (Bumper& b : G.BumperPos)
-            b.active = true;
 
     // Collision avec les cibles
-    for (Rangee& r : G.rangees)
+    for (Cible& c : G.CiblePos)
     {
-        for (Cible& c : r.cibles)
+        if (!c.active) continue;
+
+        int collision = CollisionSegCir(c.pointA, c.pointB, G.BallRadius, G.BallPos);
+        if (collision != 0)
         {
-            if (!c.active) continue;
+            *points += 500;      // incrémente le score
+            c.active = false;   // disparaît
 
-            int collision = CollisionSegCir(c.pointA, c.pointB, G.BallRadius, G.BallPos);
-            if (collision != 0)
-            {
-                c.active = false;
-                V2 segmentAB = c.pointB - c.pointA;
-                V2 normal = V2(-segmentAB.y, segmentAB.x);
-                G.BallMove = Rebond(G.BallMove, normal);
-            }
+            V2 segmentAB = c.pointB - c.pointA;
+            V2 normal = V2(-segmentAB.y, segmentAB.x);
+            G.BallMove = Rebond(G.BallMove, normal);
+            break;
         }
-
-        if (r.toutesTouchees())
-            r.reactiver();
     }
+
+
+
+
+
+
+
+
+
+    // Réactivation des CIBLES + bonus
+    bool tousDesactivesCibles = true;
+    for (Cible& c : G.CiblePos)
+        if (c.active) { tousDesactivesCibles = false; break; }
+
+    if (tousDesactivesCibles)
+    {
+        *points += 1111;              //  bonus toutes cibles touchées
+        for (Cible& c : G.CiblePos)
+            c.active = true;          //  réactivation
+    }
+
+    
+
+
 
     // Historique des positions
     G.PreviousPos.push_back(G.BallPos);
@@ -266,6 +342,9 @@ int main(int argc, char* argv[])
 {
     GameData G;
     G2D::initWindow(V2(G.WidthPix, G.HeightPix), V2(200, 200), string("Super Flipper 600 !!"));
+
+
+
     
     
     //HORLOGE
