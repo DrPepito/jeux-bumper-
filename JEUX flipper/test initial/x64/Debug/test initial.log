@@ -1,3 +1,0 @@
-﻿  test initial.cpp
-MSVCRTD.lib(exe_main.obj) : error LNK2019: symbole externe non résolu main référencé dans la fonction "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)
-C:\Users\zak\source\repos\test initial\x64\Debug\test initial.exe : fatal error LNK1120: 1 externes non résolus
