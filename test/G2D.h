@@ -16,6 +16,7 @@ struct GameData;
 
 struct Color
 {
+	
 	float R, G, B, A;
 
 	Color(float r, float g, float b)                        { R = r; G = g; B = b; A = 1; }

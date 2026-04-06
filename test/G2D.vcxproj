@@ -146,9 +146,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Eleve.cpp" />
     <ClCompile Include="G2DColor.cpp" />
     <ClCompile Include="G2DMain.cpp" />
-    <ClCompile Include="Eleve.cpp" />
     <ClCompile Include="G2DKey.cpp" />
     <ClCompile Include="G2DMouse.cpp" />
     <ClCompile Include="G2DX.cpp" />

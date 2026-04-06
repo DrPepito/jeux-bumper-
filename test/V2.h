@@ -4,14 +4,23 @@
 
 struct V2 
 {
+
+
+	
 	float x, y;
 
 	V2(float _x, float _y) { x = _x; y = _y; }
-	V2() {} 
+	
 
 	float norm()          { return sqrt(x*x + y * y); }
-	void  normalize()     { float n = norm();  x /= n;    y /= n;    }
-	V2    GetNormalized() { float n = norm();  return V2(x/n,y/n); }
+	void normalize() { float n = norm(); if (n != 0) { x /= n; y /= n; } }
+	
+	V2 GetNormalized() { float n = norm(); return (n != 0) ? V2(x / n, y / n) : V2(0, 0); }
+	
+	V2() : x(0), y(0) {}
+	
+
+
 };
 
 // comparaison sur des flottants... traitement spécial
