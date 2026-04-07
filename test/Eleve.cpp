@@ -112,6 +112,10 @@ struct GameData
     int   HeightPix = 800;
     bool  gameOver = false;
     bool  paused = false;
+    
+    float waveTransitionTime = -10.f;
+    bool inTransition = false;
+
 
     Player player{ V2(300, 50) };
 
@@ -141,6 +145,12 @@ struct GameData
     // météorites
     float lastMeteorTime = 0.f;
    
+
+    //timing gen : 
+
+    float timeOffset = 0.f;  
+
+    float lastShotTime = 0.f;  // corrige la valeur négative empechant de tirer apres  un restart 
 
 
     GameData()
@@ -181,7 +191,7 @@ struct GameData
         }
         else
         {
-            int count = 3 + w * 2;
+            int count = min(3 + w * 2, 20); //plafonnage a 20 ennemy max vague 1 = 8 v2 = 11  etc 
             for (int i = 0; i < count; i++)
             {
                 Enemy e;
@@ -193,7 +203,7 @@ struct GameData
                 else if (r == 2) { e.type = EnemyType::TANK;     e.hp = 6 + w * 2; }
                 else if (r == 3) { e.type = EnemyType::KAMIKAZE; e.hp = 1; }
                 else if (r == 4) { e.type = EnemyType::SNIPER;   e.hp = 2 + w; }
-                else { e.type = EnemyType::SPLITTER; e.hp = 4 + w; }
+                else { e.type = EnemyType::SPLITTER; e.hp = 2 + w; }
 
                 e.maxHp = e.hp;
 
@@ -207,6 +217,8 @@ struct GameData
             }
         }
     }
+
+
 };
 
 // ===================== FUNCTIONS =====================
@@ -233,11 +245,11 @@ V2 EnemyShootPattern(const Enemy& e, const Player& player)
     dir.normalize();
     switch (e.type)
     {
-    case EnemyType::BASIC:   return dir * 5;
+    case EnemyType::BASIC:   return dir * 3;
     case EnemyType::FAST:    return dir * 8;
     case EnemyType::TANK:    return dir * 4;
     case EnemyType::BOSS:    return dir * 6;
-    case EnemyType::SNIPER:  return dir * 14;
+    case EnemyType::SNIPER:  return dir * 20;
     default:                 return dir * 5;
     }
 }
@@ -306,23 +318,27 @@ void killEnemy(GameData& G, Enemy& e, float t)
 void Logic(GameData& G)
 {
 
+    float t = G2D::elapsedTimeFromStartSeconds() - G.timeOffset;
+
+
 
     //=============IU==============
 
 
     // ===== RETRY =====
+
+
     if (G.gameOver && G2D::isKeyPressed(Key::R))
     {
         int best = G.highScore;
+        float currentTime = G2D::elapsedTimeFromStartSeconds(); // dcp le bug etait la , mieux vaut avoir le temps juste avant d appuyer sur R afin de le remetre a 0 
         G = GameData();
         G.highScore = best;
-
-
-
+        G.timeOffset = currentTime; // leo on met un offset pour eviter le bug
         return;
     }
 
-
+    if (G.gameOver) return;
 
 
     // ===== PAUSE =====
@@ -334,18 +350,6 @@ void Logic(GameData& G)
     else pausePressed = false;
 
     if (G.paused) return;
-
-    float t = G2D::elapsedTimeFromStartSeconds();
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -359,6 +363,13 @@ void Logic(GameData& G)
         if (s.pos.y < 0) { s.pos.y = float(G.HeightPix); s.pos.x = float(rand() % G.WidthPix); }
     }
 
+    
+
+
+
+
+
+    
     // ===== EXPLOSIONS =====
     for (auto& ex : G.explosions) { ex.radius += ex.speed; if (ex.radius >= ex.maxRadius) ex.active = false; }
     G.explosions.erase(remove_if(G.explosions.begin(), G.explosions.end(), [](const Explosion& e) { return !e.active; }), G.explosions.end());
@@ -371,6 +382,7 @@ void Logic(GameData& G)
         if (ft.life <= 0) ft.active = false;
     }
     G.floatingTexts.erase(remove_if(G.floatingTexts.begin(), G.floatingTexts.end(), [](const FloatingText& f) { return !f.active; }), G.floatingTexts.end());
+
 
     // ===== METEORITES =====
     if (t - G.lastMeteorTime > 3.f)
@@ -413,7 +425,7 @@ void Logic(GameData& G)
     }
 
     // ===== ENRAGEMENT =====
-    if (!G.enraged && t - G.waveStartTime > 20.f)
+    if (!G.enraged && t - G.waveStartTime > 10.f)  // ennnie enrage si au boutd une min
     {
         G.enraged = true;
         spawnFloatingText(G, V2(150, 400), "ENRAGES !");
@@ -461,8 +473,8 @@ void Logic(GameData& G)
     else bombPressed = false;
 
     // ===== PLAYER SHOOT =====
-    static float lastShotTime = 0;
-    if (G2D::isKeyPressed(Key::UP) && (t - lastShotTime > G.player.fireRate))
+    
+    if (G2D::isKeyPressed(Key::UP) && (t -G.lastShotTime > G.player.fireRate))
     {
         for (int k = 0; k < G.player.shotCount; k++)
         {
@@ -473,7 +485,7 @@ void Logic(GameData& G)
             b.velocity = V2(spread, G.player.bulletSpeed);
             G.bullets.push_back(b);
         }
-        lastShotTime = t;
+            G.lastShotTime = t;
     }
 
     // ===== UPDATE PLAYER BULLETS =====
@@ -544,16 +556,16 @@ void Logic(GameData& G)
         V2 dir = G.player.pos - e.pos;
         dir.normalize();
 
-        float speed = 0.5f;
+        float speed = 0.08f;
         switch (e.type)
         {
-        case EnemyType::BASIC:    speed = (0.5f + G.wave * 0.05f) * enrageMultiplier; break;
-        case EnemyType::FAST:     speed = (1.5f + G.wave * 0.08f) * enrageMultiplier; break;
-        case EnemyType::TANK:     speed = (0.3f + G.wave * 0.03f) * enrageMultiplier; break;
-        case EnemyType::KAMIKAZE: speed = (3.0f + G.wave * 0.1f) * enrageMultiplier; break;
-        case EnemyType::BOSS:     speed = (0.8f + G.wave * 0.05f) * enrageMultiplier; break;
-        case EnemyType::SNIPER:   speed = 0.2f; break; // sniper reste loin
-        case EnemyType::SPLITTER: speed = (0.6f + G.wave * 0.04f) * enrageMultiplier; break;
+        case EnemyType::BASIC:    speed = (0.4f + G.wave * 0.05f) * enrageMultiplier; break;
+        case EnemyType::FAST:     speed = (0.6f + G.wave * 0.08f) * enrageMultiplier; break;
+        case EnemyType::TANK:     speed = (0.2f + G.wave * 0.03f) * enrageMultiplier; break;
+        case EnemyType::KAMIKAZE: speed = (0.4f + G.wave * 0.1f) * enrageMultiplier; break;
+        case EnemyType::BOSS:     speed = (0.4f + G.wave * 0.03f) * enrageMultiplier; break;
+        case EnemyType::SNIPER:   speed = 0.1f; break; // sniper reste loin
+        case EnemyType::SPLITTER: speed = (0.5f + G.wave * 0.04f) * enrageMultiplier; break;
         }
 
         // sniper garde ses distances
@@ -727,7 +739,13 @@ void Logic(GameData& G)
 // ===================== RENDER =====================
 
 void render(const GameData& G)
-{
+{   
+
+    float t = G2D::elapsedTimeFromStartSeconds() - G.timeOffset;
+    
+
+
+
     G2D::clearScreen(Color::Black);
 
     // ===== GAME OVER =====
@@ -808,10 +826,15 @@ void render(const GameData& G)
 
     // ===== PLAYER =====
     bool invincible = G.player.dashing ||
-        (G2D::elapsedTimeFromStartSeconds() - G.player.lastHitTime < G.player.invincDuration);
+        (t - G.player.lastHitTime < G.player.invincDuration); // invincible apres etre toucher
+
+
+
     G2D::drawCircle(G.player.pos, 10, invincible ? Color::Yellow : Color::White, true);
     if (G.player.shield > 0)
         G2D::drawCircle(G.player.pos, 16, Color::Cyan, false);
+
+
 
     // ===== BULLETS =====
     for (auto& b : G.bullets)
@@ -850,7 +873,7 @@ void render(const GameData& G)
     }
 
     // ===== ANNONCE VAGUE =====
-    float t = G2D::elapsedTimeFromStartSeconds();
+    
     if (t - G.waveAnnounceTime < 2.f)
     {
         string msg = (G.wave % 5 == 0) ? "!!! BOSS !!!" : "VAGUE " + to_string(G.wave);
@@ -859,7 +882,7 @@ void render(const GameData& G)
     }
 
     // ===== ENRAGEMENT =====
-    if (G.enraged)
+    if (G.enraged) 
         G2D::drawStringFontMono(V2(200, 50), "!! ENRAGES !!", 18, 2, Color::Red);
 
     // ===== HUD =====

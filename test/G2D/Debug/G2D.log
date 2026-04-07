@@ -1,7 +1,8 @@
 ﻿  Eleve.cpp
-C:\Users\zak\source\repos\test\Eleve.cpp(338,13): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
-C:\Users\zak\source\repos\test\Eleve.cpp(818,41): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-C:\Users\zak\source\repos\test\Eleve.cpp(853,13): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
-C:\Users\zak\source\repos\test\Eleve.cpp(885,37): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-C:\Users\zak\source\repos\test\Eleve.cpp(885,25): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+C:\Users\zak\source\repos\test\Eleve.cpp(321,13): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\zak\source\repos\test\Eleve.cpp(334,27): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\zak\source\repos\test\Eleve.cpp(744,13): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\zak\source\repos\test\Eleve.cpp(841,41): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+C:\Users\zak\source\repos\test\Eleve.cpp(908,37): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+C:\Users\zak\source\repos\test\Eleve.cpp(908,25): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
   G2D.vcxproj -> C:\Users\zak\source\repos\test\Debug\G2D.exe
