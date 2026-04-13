@@ -1,8 +1,25 @@
 ﻿  Eleve.cpp
-C:\Users\zak\source\repos\test\Eleve.cpp(321,13): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
-C:\Users\zak\source\repos\test\Eleve.cpp(334,27): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
-C:\Users\zak\source\repos\test\Eleve.cpp(744,13): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
-C:\Users\zak\source\repos\test\Eleve.cpp(841,41): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-C:\Users\zak\source\repos\test\Eleve.cpp(908,37): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-C:\Users\zak\source\repos\test\Eleve.cpp(908,25): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-  G2D.vcxproj -> C:\Users\zak\source\repos\test\Debug\G2D.exe
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(331,13): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(344,27): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(778,13): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(872,41): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(909,18): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(949,37): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(949,25): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+  G2DColor.cpp
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\G2DColor.cpp(16,39): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\G2DColor.cpp(16,28): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\G2DColor.cpp(16,17): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\G2DColor.cpp(22,10): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\G2DColor.cpp(23,10): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\G2DColor.cpp(24,10): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+  G2DMain.cpp
+  G2DKey.cpp
+  G2DMouse.cpp
+  G2DX.cpp
+  GlutImport.h
+  lodepng.cpp
+  G2DPNGreader.cpp
+  V2.cpp
+  Génération de code en cours...
+  G2D.vcxproj -> C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Debug\G2D.exe

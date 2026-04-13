@@ -191,7 +191,7 @@ struct GameData
         }
         else
         {
-            int count = min(3 + w * 2, 20); //plafonnage a 20 ennemy max vague 1 = 8 v2 = 11  etc 
+            int count = min(2 + w, 14); // vague 1=3, v2=4, v3=5 ... plafond à 14
             for (int i = 0; i < count; i++)
             {
                 Enemy e;
@@ -291,15 +291,25 @@ void killEnemy(GameData& G, Enemy& e, float t)
     // SPLITTER : spawn 2 petits ennemis
     if (e.type == EnemyType::SPLITTER)
     {
-        for (int s = 0; s < 2; s++)
+        // aliveCount - 1 car e est déjà marqué inactive mais encore dans le vecteur
+        int aliveCount = 0;
+        for (auto& en : G.enemies) if (en.active) aliveCount++;
+        // e vient d'être mis inactive donc aliveCount ne le compte plus, c'est bon
+
+        int maxEnemies = min(2 + G.wave, 12); // même plafond que spawnWave
+        if (aliveCount > 0 && aliveCount < maxEnemies)
         {
-            Enemy small;
-            small.pos = V2(e.pos.x + (s == 0 ? -20.f : 20.f), e.pos.y);
-            small.type = EnemyType::FAST;
-            small.hp = 1;
-            small.maxHp = 1;
-            G.enemies.push_back(small);
+            for (int s = 0; s < 2; s++)
+            {
+                Enemy small;
+                small.pos = V2(e.pos.x + (s == 0 ? -20.f : 20.f), e.pos.y);
+                small.type = EnemyType::FAST;
+                small.hp = 1;
+                small.maxHp = 1;
+                G.enemies.push_back(small);
+            }
         }
+        // Si aliveCount == 0 : c'était le dernier, on ne spawne rien → transition déclenchée
     }
 
     // drop
@@ -414,18 +424,28 @@ void Logic(GameData& G)
     // ===== VAGUE SUIVANTE =====
     int alive = 0;
     for (auto& e : G.enemies) if (e.active) alive++;
-    if (alive == 0)
+    if (alive == 0 && !G.inTransition)
     {
-        G.wave++;
-        G.waveStartTime = t;
-        G.waveAnnounceTime = t;
-        G.enraged = false;
-        G.spawnWave(G.wave);
-        return;
+        G.inTransition = true;
+        G.waveTransitionTime = t;
+    }
+
+    if (G.inTransition)
+    {
+        float elapsed = t - G.waveTransitionTime;
+        if (elapsed >= 3.f)
+        {
+            G.inTransition = false;
+            G.wave++;
+            G.waveStartTime = t;
+            G.waveAnnounceTime = t;
+            G.enraged = false;
+            G.spawnWave(G.wave);
+        }
     }
 
     // ===== ENRAGEMENT =====
-    if (!G.enraged && t - G.waveStartTime > 10.f)  // ennnie enrage si au boutd une min
+    if (!G.inTransition && !G.enraged && t - G.waveStartTime > 10.f)
     {
         G.enraged = true;
         spawnFloatingText(G, V2(150, 400), "ENRAGES !");
@@ -545,6 +565,24 @@ void Logic(GameData& G)
     G.bullets.erase(remove_if(G.bullets.begin(), G.bullets.end(), [](const Bullet& b) { return !b.active; }), G.bullets.end());
     G.enemyBullets.erase(remove_if(G.enemyBullets.begin(), G.enemyBullets.end(), [](const Bullet& b) { return !b.active; }), G.enemyBullets.end());
 
+    // ===== COLLISION BULLETS / METEORITES =====
+    for (auto& b : G.bullets)
+    {
+        if (!b.active) continue;
+        for (auto& m : G.meteors)
+        {
+            if (!m.active) continue;
+            V2 diff = b.pos - m.pos;
+            if (diff.norm() < m.radius + 2.f)
+            {
+                m.active = false;
+                if (!b.pierce) b.active = false;
+                spawnExplosion(G, m.pos, 30.f);
+                // pas de score, pas de killEnemy -> ça compte pas comme ennemi
+            }
+        }
+    }
+
     // ===== ENEMY AI =====
     float enrageMultiplier = G.enraged ? 2.f : 1.f;
 
@@ -572,12 +610,19 @@ void Logic(GameData& G)
         if (e.type == EnemyType::SNIPER)
         {
             float dist = (G.player.pos - e.pos).norm();
-            if (dist < 250.f) e.pos = e.pos + dir * (-speed); // recule
+            if (dist < 250.f) e.pos = e.pos + dir * (-speed);
             else              e.pos = e.pos + dir * speed;
         }
         else
         {
             e.pos = e.pos + dir * speed;
+        }
+
+        // désactiver si complètement hors écran (marge de 100px)
+        if (e.pos.x < -100.f || e.pos.x > G.WidthPix + 100.f ||
+            e.pos.y < -100.f || e.pos.y > G.HeightPix + 100.f)
+        {
+            e.active = false;
         }
 
         // kamikaze
@@ -595,7 +640,7 @@ void Logic(GameData& G)
         }
 
         // tir
-        float shotDelay = max(0.4f, (e.type == EnemyType::BOSS ? 0.5f : 1.5f) - G.wave * 0.05f);
+        float shotDelay = max(2.4f, (e.type == EnemyType::BOSS ? 0.5f : 1.5f) - G.wave * 0.05f);
         shotDelay /= enrageMultiplier;
 
         if (t - e.lastShotTime > shotDelay)
@@ -682,17 +727,6 @@ void Logic(GameData& G)
         }
     }
 
-    // ===== RESPAWN =====
-    for (auto& e : G.enemies)
-    {
-        if (!e.active && !G.bossSpawned && G.wave < 5 && rand() % 300 == 0)
-        {
-            e.pos = V2(float(rand() % G.WidthPix), 700.f);
-            e.hp = e.maxHp;
-            e.active = true;
-        }
-    }
-
     // ===== DROPS : mouvement + clignotement =====
     for (auto& d : G.drops)
     {
@@ -742,9 +776,6 @@ void render(const GameData& G)
 {   
 
     float t = G2D::elapsedTimeFromStartSeconds() - G.timeOffset;
-    
-
-
 
     G2D::clearScreen(Color::Black);
 
@@ -872,8 +903,18 @@ void render(const GameData& G)
         G2D::drawStringFontMono(ft.pos, ft.text, 16, 2, col);
     }
 
+    // ===== TRANSITION INTER-VAGUE =====
+    if (G.inTransition)
+    {
+        float t2 = G2D::elapsedTimeFromStartSeconds() - G.timeOffset;
+        string msg = "VAGUE " + to_string(G.wave + 1) + " ...";
+        G2D::drawStringFontMono(V2(160, 420), msg, 25, 3, Color::Cyan);
+        int countdown = (int)(3.f - (t2 - G.waveTransitionTime)) + 1;
+        if (countdown > 0)
+            G2D::drawStringFontMono(V2(285, 370), to_string(countdown), 30, 3, Color::White);
+    }
+
     // ===== ANNONCE VAGUE =====
-    
     if (t - G.waveAnnounceTime < 2.f)
     {
         string msg = (G.wave % 5 == 0) ? "!!! BOSS !!!" : "VAGUE " + to_string(G.wave);
