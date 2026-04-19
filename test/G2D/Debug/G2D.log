@@ -1,11 +1,11 @@
 ﻿  Eleve.cpp
-C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(331,13): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
-C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(344,27): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
-C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(778,13): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
-C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(872,41): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(909,18): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
-C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(949,37): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
-C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(949,25): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(79,23): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(377,13): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(384,29): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(796,13): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(938,18): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(978,37): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
+C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\Eleve.cpp(978,25): warning C4244: 'argument' : conversion de 'int' en 'float', perte possible de données
   G2DColor.cpp
 C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\G2DColor.cpp(16,39): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
 C:\Users\leodn\OneDrive\Documents\JEU_TD_FLIPPER\test\G2DColor.cpp(16,28): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données

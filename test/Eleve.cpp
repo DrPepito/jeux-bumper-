@@ -10,6 +10,76 @@ using namespace std;
 
 // ===================== STRUCTURES =====================
 
+struct Sprites
+{
+    V2 pos;
+    V2 size;
+    int IdSpriteBoss;
+    int IdSpritePlayer;
+    int IdSpriteEnemyBullet;
+    int IdSpritePlayerBullet;
+    int IdSpriteLifeBar_1;
+    int IdSpriteLifeBar_2;
+    int IdSpriteLifeBar_3;
+    int IdSpriteLifeBar_4;
+    int IdSpriteLifeBar_5;
+    int IdSpriteAsteroid;
+    int IdSpriteStar;
+    int IdSpriteBasic;
+    int IdSpriteFast;
+    int IdSpriteKamikaze;
+    int IdSpriteSplitter;
+    int IdSpriteSniper;
+    int IdSpriteTank;
+
+    Sprites()
+    {
+        pos = V2(300, 100);
+        size = V2(32, 27);
+    }
+
+    void InitTextures()
+    {
+        IdSpritePlayer = G2D::ExtractTextureFromPNG(".//Sprites//Spaceship//Spaceship.png", Transparency::UpperLeft);
+        printf("Loading Player...\n");
+        IdSpriteBoss = G2D::ExtractTextureFromPNG(".//Sprites//Enemy_spaceships//enemy_spaceship.png", Transparency::UpperLeft);
+        printf("Loading Boss...\n");
+        IdSpritePlayerBullet = G2D::ExtractTextureFromPNG(".//Sprites//Spaceships_bullets//spaceship_bullet.png", Transparency::UpperLeft);
+        printf("Loading player bullet...\n");
+        IdSpriteEnemyBullet = G2D::ExtractTextureFromPNG(".//Sprites//Enemy_bullets//enemy_bullet.png", Transparency::UpperLeft);
+        printf("Loading enemy bullet...\n");
+        IdSpriteAsteroid = G2D::ExtractTextureFromPNG(".//Sprites//Asteroids//asteroid.png", Transparency::UpperLeft);
+        printf("Loading asteroid...\n");
+        IdSpriteStar = G2D::ExtractTextureFromPNG(".//Sprites//Star//star.png", Transparency::UpperLeft);
+        printf("Loading star...\n");
+        IdSpriteBasic = G2D::ExtractTextureFromPNG(".//Sprites//Enemies//basic.png", Transparency::UpperLeft);
+        printf("Loading basic enemy...\n");
+        IdSpriteFast = G2D::ExtractTextureFromPNG(".//Sprites//Enemies//fast.png", Transparency::UpperLeft);
+        printf("Loading fast enemy...\n");
+        IdSpriteKamikaze = G2D::ExtractTextureFromPNG(".//Sprites//Enemies//kamikaze.png", Transparency::UpperLeft);
+        printf("Loading kamikaze enemy...\n");
+        IdSpriteSplitter = G2D::ExtractTextureFromPNG(".//Sprites//Enemies//splitter.png", Transparency::UpperLeft);
+        printf("Loading splitter enemy...\n");
+        IdSpriteSniper = G2D::ExtractTextureFromPNG(".//Sprites//Enemies//sniper.png", Transparency::UpperLeft);
+        printf("Loading sniper enemy...\n");
+        IdSpriteTank = G2D::ExtractTextureFromPNG(".//Sprites//Enemies//tank.png", Transparency::UpperLeft);
+        printf("Loading tank enemy...\n");
+        /*IdSpriteLifeBar_1 = SafeExtractTextureFromPNG(".//Sprites//Life_bar//1hp_lifebar.png", Transparency::None);
+        printf("1hp id = %d\n", IdSpriteLifeBar_1);
+        IdSpriteLifeBar_2 = G2(".//Sprites//Life_bar//2hp_lifebar.png", Transparency::None);
+        printf("Loading 2hp...\n");
+        IdSpriteLifeBar_3 = G2D::ExtractTextureFromPNG(".//Sprites//Life_bar//3hp_lifebar.png", Transparency::None);
+        printf("Loading 3hp...\n");
+        IdSpriteLifeBar_4 = G2D::ExtractTextureFromPNG(".//Sprites//Life_bar//4hp_lifebar.png", Transparency::None);
+        printf("Loading 4hp...\n");
+        IdSpriteLifeBar_5 = G2D::ExtractTextureFromPNG(".//Sprites//Life_bar//5hp_lifebar.png", Transparency::None);
+        printf("Loading 5hp...\n");*/
+
+        int zoom = 2;
+        size = size * zoom;
+    }
+};
+
 struct Bullet
 {
     V2   pos;
@@ -67,8 +137,6 @@ struct Enemy
     float     lastRegenTime = 0;
     float     lastTeleportTime = 0;
     float     lastDodgeTime = 0;
-
-    // sniper
     float     aimStartTime = 0;
     bool      aiming = false;
 };
@@ -112,10 +180,11 @@ struct GameData
     int   HeightPix = 800;
     bool  gameOver = false;
     bool  paused = false;
-    
-    float waveTransitionTime = -10.f;
-    bool inTransition = false;
 
+    Sprites sprites;
+
+    float waveTransitionTime = -10.f;
+    bool  inTransition = false;
 
     Player player{ V2(300, 50) };
 
@@ -127,6 +196,7 @@ struct GameData
     vector<Star>         stars;
     vector<FloatingText> floatingTexts;
     vector<Meteor>       meteors;
+    vector<Enemy>        toSpawn;
 
     int   score = 0;
     int   highScore = 0;
@@ -135,23 +205,13 @@ struct GameData
     int   wave = 1;
     bool  bossSpawned = false;
 
-    // enragement
     float waveStartTime = 0.f;
     bool  enraged = false;
 
-    // annonce de vague
     float waveAnnounceTime = -10.f;
-
-    // météorites
     float lastMeteorTime = 0.f;
-   
-
-    //timing gen : 
-
-    float timeOffset = 0.f;  
-
-    float lastShotTime = 0.f;  // corrige la valeur négative empechant de tirer apres  un restart 
-
+    float timeOffset = 0.f;
+    float lastShotTime = 0.f;
 
     GameData()
     {
@@ -163,11 +223,6 @@ struct GameData
             stars.push_back(s);
         }
         spawnWave(1);
-
-
-
-
-
     }
 
     void spawnWave(int w)
@@ -182,7 +237,7 @@ struct GameData
             Enemy boss;
             boss.pos = V2(300.f, 700.f);
             boss.type = EnemyType::BOSS;
-            boss.hp = 30 + w * 5;
+            boss.hp = 50 + w * 5;
             boss.maxHp = boss.hp;
             boss.regenerates = true;
             boss.dodger = true;
@@ -191,7 +246,7 @@ struct GameData
         }
         else
         {
-            int count = min(2 + w, 14); // vague 1=3, v2=4, v3=5 ... plafond à 14
+            int count = min(2 + w, 14);
             for (int i = 0; i < count; i++)
             {
                 Enemy e;
@@ -207,7 +262,6 @@ struct GameData
 
                 e.maxHp = e.hp;
 
-                // scaling difficulté
                 if (w >= 2 && rand() % max(2, 4 - w / 3) == 0) e.shielded = true;
                 if (w >= 2 && rand() % max(2, 4 - w / 3) == 0) e.teleporter = true;
                 if (w >= 3 && rand() % max(2, 5 - w / 3) == 0) e.regenerates = true;
@@ -217,8 +271,6 @@ struct GameData
             }
         }
     }
-
-
 };
 
 // ===================== FUNCTIONS =====================
@@ -288,15 +340,12 @@ void killEnemy(GameData& G, Enemy& e, float t)
     spawnExplosion(G, e.pos, e.type == EnemyType::BOSS ? 80.f : 40.f);
     spawnFloatingText(G, e.pos, "+" + to_string(bonus) + (G.combo > 1 ? " x" + to_string(G.combo) : ""));
 
-    // SPLITTER : spawn 2 petits ennemis
     if (e.type == EnemyType::SPLITTER)
     {
-        // aliveCount - 1 car e est déjà marqué inactive mais encore dans le vecteur
         int aliveCount = 0;
         for (auto& en : G.enemies) if (en.active) aliveCount++;
-        // e vient d'être mis inactive donc aliveCount ne le compte plus, c'est bon
 
-        int maxEnemies = min(2 + G.wave, 12); // même plafond que spawnWave
+        int maxEnemies = min(2 + G.wave, 12);
         if (aliveCount > 0 && aliveCount < maxEnemies)
         {
             for (int s = 0; s < 2; s++)
@@ -306,13 +355,11 @@ void killEnemy(GameData& G, Enemy& e, float t)
                 small.type = EnemyType::FAST;
                 small.hp = 1;
                 small.maxHp = 1;
-                G.enemies.push_back(small);
+                G.toSpawn.push_back(small);
             }
         }
-        // Si aliveCount == 0 : c'était le dernier, on ne spawne rien → transition déclenchée
     }
 
-    // drop
     int dropChance = max(10, 35 - (int)G.wave * 2);
     if (rand() % 100 < dropChance)
     {
@@ -327,29 +374,24 @@ void killEnemy(GameData& G, Enemy& e, float t)
 
 void Logic(GameData& G)
 {
-
     float t = G2D::elapsedTimeFromStartSeconds() - G.timeOffset;
 
-
-
-    //=============IU==============
-
-
     // ===== RETRY =====
-
-
     if (G.gameOver && G2D::isKeyPressed(Key::R))
     {
-        int best = G.highScore;
-        float currentTime = G2D::elapsedTimeFromStartSeconds(); // dcp le bug etait la , mieux vaut avoir le temps juste avant d appuyer sur R afin de le remetre a 0 
+        int     best = G.highScore;
+        Sprites savedSprites = G.sprites;          // ← sauvegarde les sprites
+        float   currentTime = G2D::elapsedTimeFromStartSeconds();
+
         G = GameData();
+
         G.highScore = best;
-        G.timeOffset = currentTime; // leo on met un offset pour eviter le bug
+        G.sprites = savedSprites;               // ← restaure les sprites
+        G.timeOffset = currentTime;
         return;
     }
 
     if (G.gameOver) return;
-
 
     // ===== PAUSE =====
     static bool pausePressed = false;
@@ -361,25 +403,13 @@ void Logic(GameData& G)
 
     if (G.paused) return;
 
-
-
-
-
-
-    // ===== FOND ETOILE =====
+    // ===== FOND ETOILES =====
     for (auto& s : G.stars)
     {
         s.pos.y -= s.speed;
-        if (s.pos.y < 0) { s.pos.y = float(G.HeightPix); s.pos.x = float(rand() % G.WidthPix); }
+        if (s.pos.y < 0) { s.pos.y = float(G.HeightPix); s.pos.x = float(rand() % (2*G.WidthPix)); }
     }
 
-    
-
-
-
-
-
-    
     // ===== EXPLOSIONS =====
     for (auto& ex : G.explosions) { ex.radius += ex.speed; if (ex.radius >= ex.maxRadius) ex.active = false; }
     G.explosions.erase(remove_if(G.explosions.begin(), G.explosions.end(), [](const Explosion& e) { return !e.active; }), G.explosions.end());
@@ -392,7 +422,6 @@ void Logic(GameData& G)
         if (ft.life <= 0) ft.active = false;
     }
     G.floatingTexts.erase(remove_if(G.floatingTexts.begin(), G.floatingTexts.end(), [](const FloatingText& f) { return !f.active; }), G.floatingTexts.end());
-
 
     // ===== METEORITES =====
     if (t - G.lastMeteorTime > 3.f)
@@ -408,8 +437,7 @@ void Logic(GameData& G)
         m.pos = m.pos + m.velocity;
         if (m.pos.y < 0) m.active = false;
 
-        // collision joueur
-        V2 diff = m.pos - G.player.pos;
+        V2   diff = m.pos - G.player.pos;
         bool invincCheck = G.player.dashing || (t - G.player.lastHitTime < G.player.invincDuration);
         if (diff.norm() < 20.f && !invincCheck)
         {
@@ -483,7 +511,7 @@ void Logic(GameData& G)
     // ===== CLAMP =====
     float radius = 10.f;
     if (G.player.pos.x < radius)               G.player.pos.x = radius;
-    if (G.player.pos.x > G.WidthPix - radius) G.player.pos.x = G.WidthPix - radius;
+    if (G.player.pos.x > G.WidthPix - radius)  G.player.pos.x = G.WidthPix - radius;
     if (G.player.pos.y < radius)               G.player.pos.y = radius;
     if (G.player.pos.y > G.HeightPix - radius) G.player.pos.y = G.HeightPix - radius;
 
@@ -493,8 +521,7 @@ void Logic(GameData& G)
     else bombPressed = false;
 
     // ===== PLAYER SHOOT =====
-    
-    if (G2D::isKeyPressed(Key::UP) && (t -G.lastShotTime > G.player.fireRate))
+    if (G2D::isKeyPressed(Key::UP) && (t - G.lastShotTime > G.player.fireRate))
     {
         for (int k = 0; k < G.player.shotCount; k++)
         {
@@ -505,7 +532,7 @@ void Logic(GameData& G)
             b.velocity = V2(spread, G.player.bulletSpeed);
             G.bullets.push_back(b);
         }
-            G.lastShotTime = t;
+        G.lastShotTime = t;
     }
 
     // ===== UPDATE PLAYER BULLETS =====
@@ -550,14 +577,17 @@ void Logic(GameData& G)
             V2 diff = G.bullets[i].pos - e.pos;
             if (diff.norm() < hitRadius)
             {
-                if (e.shielded)       e.shielded = false;
-                else                  e.hp--;
+                if (e.shielded)           e.shielded = false;
+                else                      e.hp--;
                 if (!G.bullets[i].pierce) G.bullets[i].active = false;
 
                 if (e.hp <= 0) killEnemy(G, e, t);
             }
         }
     }
+    for (auto& s : G.toSpawn)
+        G.enemies.push_back(s);
+    G.toSpawn.clear();
 
     if (t - G.lastKillTime > 3.f && G.combo > 0) G.combo = 0;
 
@@ -578,7 +608,6 @@ void Logic(GameData& G)
                 m.active = false;
                 if (!b.pierce) b.active = false;
                 spawnExplosion(G, m.pos, 30.f);
-                // pas de score, pas de killEnemy -> ça compte pas comme ennemi
             }
         }
     }
@@ -602,11 +631,10 @@ void Logic(GameData& G)
         case EnemyType::TANK:     speed = (0.2f + G.wave * 0.03f) * enrageMultiplier; break;
         case EnemyType::KAMIKAZE: speed = (0.4f + G.wave * 0.1f) * enrageMultiplier; break;
         case EnemyType::BOSS:     speed = (0.4f + G.wave * 0.03f) * enrageMultiplier; break;
-        case EnemyType::SNIPER:   speed = 0.1f; break; // sniper reste loin
+        case EnemyType::SNIPER:   speed = 0.1f; break;
         case EnemyType::SPLITTER: speed = (0.5f + G.wave * 0.04f) * enrageMultiplier; break;
         }
 
-        // sniper garde ses distances
         if (e.type == EnemyType::SNIPER)
         {
             float dist = (G.player.pos - e.pos).norm();
@@ -618,14 +646,10 @@ void Logic(GameData& G)
             e.pos = e.pos + dir * speed;
         }
 
-        // désactiver si complètement hors écran (marge de 100px)
         if (e.pos.x < -100.f || e.pos.x > G.WidthPix + 100.f ||
             e.pos.y < -100.f || e.pos.y > G.HeightPix + 100.f)
-        {
             e.active = false;
-        }
 
-        // kamikaze
         if (e.type == EnemyType::KAMIKAZE)
         {
             V2 diff = e.pos - G.player.pos;
@@ -639,7 +663,6 @@ void Logic(GameData& G)
             continue;
         }
 
-        // tir
         float shotDelay = max(2.4f, (e.type == EnemyType::BOSS ? 0.5f : 1.5f) - G.wave * 0.05f);
         shotDelay /= enrageMultiplier;
 
@@ -647,7 +670,6 @@ void Logic(GameData& G)
         {
             if (e.type == EnemyType::SNIPER)
             {
-                // vise pendant 1.5s avant de tirer
                 if (!e.aiming)
                 {
                     e.aiming = true;
@@ -687,21 +709,18 @@ void Logic(GameData& G)
             }
         }
 
-        // téléportation
         if (e.teleporter && t - e.lastTeleportTime > 3.f)
         {
             e.pos = V2(float(rand() % G.WidthPix), float(400 + rand() % 300));
             e.lastTeleportTime = t;
         }
 
-        // régénération
         if (e.regenerates && e.hp < e.maxHp && t - e.lastRegenTime > 2.f)
         {
             e.hp++;
             e.lastRegenTime = t;
         }
 
-        // dodge
         if (e.dodger)
         {
             float minDist = 999999.f;
@@ -746,14 +765,14 @@ void Logic(GameData& G)
             string txt = "";
             switch (d.type)
             {
-            case DropType::SPEED:     G.player.speed = min(12.f, G.player.speed + 1.1f);       txt = "SPEED !";     break;
-            case DropType::HEALTH:    G.player.hp++;                                                   txt = "HP +1 !";     break;
-            case DropType::DAMAGE:    G.player.bulletSpeed = min(20.f, G.player.bulletSpeed + 2.f);   txt = "DAMAGE !";    break;
-            case DropType::FIRERATE:  G.player.fireRate = max(0.08f, G.player.fireRate - 0.03f);   txt = "FIRERATE !";  break;
+            case DropType::SPEED:     G.player.speed = min(12.f, G.player.speed + 1.1f);            txt = "SPEED !";     break;
+            case DropType::HEALTH:    G.player.hp++;                                                 txt = "HP +1 !";     break;
+            case DropType::DAMAGE:    G.player.bulletSpeed = min(20.f, G.player.bulletSpeed + 2.f); txt = "DAMAGE !";    break;
+            case DropType::FIRERATE:  G.player.fireRate = max(0.08f, G.player.fireRate - 0.03f);    txt = "FIRERATE !";  break;
             case DropType::MULTISHOT: G.player.shotCount = min(3, G.player.shotCount + 1);          txt = "MULTISHOT !"; break;
-            case DropType::SHIELD:    G.player.shield = min(2, G.player.shield + 1);             txt = "SHIELD !";    break;
-            case DropType::BOMB:      G.player.bombs = min(3, G.player.bombs + 1);              txt = "BOMB !";      break;
-            case DropType::PIERCE:    G.player.pierce = true;                                     txt = "PIERCE !";    break;
+            case DropType::SHIELD:    G.player.shield = min(2, G.player.shield + 1);                txt = "SHIELD !";    break;
+            case DropType::BOMB:      G.player.bombs = min(3, G.player.bombs + 1);                  txt = "BOMB !";      break;
+            case DropType::PIERCE:    G.player.pierce = true;                                        txt = "PIERCE !";    break;
             }
             spawnFloatingText(G, G.player.pos, txt);
             d.active = false;
@@ -773,8 +792,7 @@ void Logic(GameData& G)
 // ===================== RENDER =====================
 
 void render(const GameData& G)
-{   
-
+{
     float t = G2D::elapsedTimeFromStartSeconds() - G.timeOffset;
 
     G2D::clearScreen(Color::Black);
@@ -794,7 +812,6 @@ void render(const GameData& G)
     // ===== PAUSE =====
     if (G.paused)
     {
-        // on affiche quand même le jeu en arrière plan
         for (auto& s : G.stars) G2D::drawCircle(s.pos, 1, Color::White, true);
         G2D::drawStringFontMono(V2(200, 430), "PAUSE", 30, 3, Color::Yellow);
         G2D::drawStringFontMono(V2(170, 380), "[ P ] Reprendre", 20, 2, Color::White);
@@ -804,11 +821,23 @@ void render(const GameData& G)
 
     // ===== FOND ETOILE =====
     for (auto& s : G.stars)
-        G2D::drawCircle(s.pos, 1, Color::White, true);
+    {
+        G2D::drawRectWithTexture(
+            G.sprites.IdSpriteStar,
+            V2(s.pos.x - 8, s.pos.y - 8),
+            V2(5, 5));
+    }
 
     // ===== METEORITES =====
     for (auto& m : G.meteors)
-        G2D::drawCircle(m.pos, m.radius, Color::Red, true);
+    {
+        float d = m.radius * 2;
+        G2D::drawRectWithTexture(
+            G.sprites.IdSpriteAsteroid,
+            V2(m.pos.x - m.radius, m.pos.y - m.radius),
+            V2(d, d)
+        );
+    }
 
     // ===== EXPLOSIONS =====
     for (auto& ex : G.explosions)
@@ -818,25 +847,22 @@ void render(const GameData& G)
     for (auto& e : G.enemies)
     {
         if (!e.active) continue;
-        Color c = Color::White;
         float r = 15.f;
+        int spriteId = -1;
         switch (e.type)
         {
-        case EnemyType::BASIC:    c = Color::Green;   r = 15.f; break;
-        case EnemyType::FAST:     c = Color::Cyan;    r = 12.f; break;
-        case EnemyType::TANK:     c = Color::Red;     r = 20.f; break;
-        case EnemyType::KAMIKAZE: c = Color::Magenta; r = 10.f; break;
-        case EnemyType::BOSS:     c = Color::Red;     r = 40.f; break;
-        case EnemyType::SNIPER:   c = Color::Yellow;  r = 13.f; break;
-        case EnemyType::SPLITTER: c = Color::Green;   r = 18.f; break;
+        case EnemyType::BASIC:    r = 10.f; spriteId = G.sprites.IdSpriteBasic;    break;
+        case EnemyType::FAST:     r = 10.f; spriteId = G.sprites.IdSpriteFast;     break;
+        case EnemyType::TANK:     r = 30.f; spriteId = G.sprites.IdSpriteTank;     break;
+        case EnemyType::KAMIKAZE: r = 10.f; spriteId = G.sprites.IdSpriteKamikaze; break;
+        case EnemyType::BOSS:     r = 40.f; spriteId = G.sprites.IdSpriteBoss;     break;
+        case EnemyType::SNIPER:   r = 20.f; spriteId = G.sprites.IdSpriteSniper;   break;
+        case EnemyType::SPLITTER: r = 22.f; spriteId = G.sprites.IdSpriteSplitter; break;
         }
 
-        // rouge si enragé
-        if (G.enraged) c = Color::Red;
+        float d = r * 2;
+        G2D::drawRectWithTexture(spriteId, V2(e.pos.x - r, e.pos.y - r), V2(d, d));
 
-        G2D::drawCircle(e.pos, r, c, true);
-
-        // laser de visée sniper
         if (e.type == EnemyType::SNIPER && e.aiming)
         {
             V2 dir = G.player.pos - e.pos;
@@ -844,7 +870,6 @@ void render(const GameData& G)
             G2D::drawLine(e.pos, V2(e.pos.x + dir.x * 300.f, e.pos.y + dir.y * 300.f), Color::Red);
         }
 
-        // barre de vie
         float pct = float(e.hp) / float(e.maxHp);
         G2D::drawLine(V2(e.pos.x - r, e.pos.y - r - 5), V2(e.pos.x + r, e.pos.y - r - 5), Color::Red);
         G2D::drawLine(V2(e.pos.x - r, e.pos.y - r - 5), V2(e.pos.x - r + 2 * r * pct, e.pos.y - r - 5), Color::Green);
@@ -857,27 +882,31 @@ void render(const GameData& G)
 
     // ===== PLAYER =====
     bool invincible = G.player.dashing ||
-        (t - G.player.lastHitTime < G.player.invincDuration); // invincible apres etre toucher
+        (t - G.player.lastHitTime < G.player.invincDuration);
 
-
-
-    G2D::drawCircle(G.player.pos, 10, invincible ? Color::Yellow : Color::White, true);
+    V2 playerSize(32 * 2, 27 * 2);
+    G2D::drawRectWithTexture(G.sprites.IdSpritePlayer, 
+        V2(G.player.pos.x - playerSize.x / 2, G.player.pos.y - playerSize.y / 2), 
+        playerSize);
     if (G.player.shield > 0)
         G2D::drawCircle(G.player.pos, 16, Color::Cyan, false);
 
-
-
     // ===== BULLETS =====
     for (auto& b : G.bullets)
-        G2D::drawCircle(b.pos, b.pierce ? 4 : 2, b.pierce ? Color::Magenta : Color::Red, true);
+        G2D::drawRectWithTexture(
+            G.sprites.IdSpritePlayerBullet,
+            V2(b.pos.x - 8, b.pos.y - 8),
+            V2(8, 8));
     for (auto& b : G.enemyBullets)
-        G2D::drawCircle(b.pos, 3, Color::Yellow, true);
+        G2D::drawRectWithTexture(
+            G.sprites.IdSpriteEnemyBullet,
+            V2(b.pos.x - 8, b.pos.y - 8),
+            V2(8, 8));
 
     // ===== DROPS =====
     for (auto& d : G.drops)
     {
         if (!d.active) continue;
-        // clignotement
         if ((int)(d.blinkTime * 3) % 2 == 0) continue;
         Color c = Color::White;
         switch (d.type)
@@ -888,7 +917,7 @@ void render(const GameData& G)
         case DropType::FIRERATE:  c = Color::Magenta; break;
         case DropType::MULTISHOT: c = Color::Red;     break;
         case DropType::SHIELD:    c = Color::Blue;    break;
-        case DropType::BOMB:      c = Color::Red;  break;
+        case DropType::BOMB:      c = Color::Red;     break;
         case DropType::PIERCE:    c = Color::White;   break;
         }
         G2D::drawCircle(d.pos, 8, c, true);
@@ -923,20 +952,20 @@ void render(const GameData& G)
     }
 
     // ===== ENRAGEMENT =====
-    if (G.enraged) 
+    if (G.enraged)
         G2D::drawStringFontMono(V2(200, 50), "!! ENRAGES !!", 18, 2, Color::Red);
 
     // ===== HUD =====
-    G2D::drawStringFontMono(V2(10, 780), "Score: " + to_string(G.score), 18, 2, Color::White);
-    G2D::drawStringFontMono(V2(10, 758), "Best:  " + to_string(G.highScore), 18, 2, Color::Yellow);
-    G2D::drawStringFontMono(V2(10, 736), "Vague: " + to_string(G.wave), 18, 2, Color::Cyan);
-    G2D::drawStringFontMono(V2(10, 714), "HP:    " + to_string(G.player.hp), 18, 2, Color::Red);
-    G2D::drawStringFontMono(V2(10, 692), "Shield:" + to_string(G.player.shield), 18, 2, Color::Cyan);
-    G2D::drawStringFontMono(V2(10, 670), "Bombs: " + to_string(G.player.bombs), 18, 2, Color::Red);
-    G2D::drawStringFontMono(V2(10, 648), "Shots: " + to_string(G.player.shotCount), 18, 2, Color::Yellow);
-    G2D::drawStringFontMono(V2(10, 626), "Speed: " + to_string((int)G.player.speed) + "/12", 18, 2, Color::White);
+    G2D::drawStringFontMono(V2(250, 780), "Vague: " + to_string(G.wave), 18, 2, Color::Cyan);
+    G2D::drawStringFontMono(V2(480, 780), "Score: " + to_string(G.score), 18, 2, Color::White);
+    G2D::drawStringFontMono(V2(480, 758), "Best:  " + to_string(G.highScore), 18, 2, Color::Yellow);
+    G2D::drawStringFontMono(V2(10, 780), "HP:    " + to_string(G.player.hp), 18, 2, Color::Red);
+    G2D::drawStringFontMono(V2(10, 758), "Shield:" + to_string(G.player.shield), 18, 2, Color::Cyan);
+    G2D::drawStringFontMono(V2(10, 736), "Bombs: " + to_string(G.player.bombs), 18, 2, Color::Red);
+    G2D::drawStringFontMono(V2(10, 714), "Shots: " + to_string(G.player.shotCount), 18, 2, Color::Yellow);
+    G2D::drawStringFontMono(V2(10, 692), "Speed: " + to_string((int)G.player.speed) + "/12", 18, 2, Color::White);
     if (G.combo > 1)
-        G2D::drawStringFontMono(V2(400, 780), "COMBO x" + to_string(G.combo), 20, 2, Color::Red);
+        G2D::drawStringFontMono(V2(250, 756), "COMBO x" + to_string(G.combo), 20, 2, Color::Red);
 
     G2D::Show();
 }
@@ -947,5 +976,8 @@ int main(int argc, char* argv[])
 {
     GameData G;
     G2D::initWindow(V2(G.WidthPix, G.HeightPix), V2(200, 200), "Ball Shooter 2D");
+
+    G.sprites.InitTextures();  // ← chargement des sprites UNE SEULE FOIS apres initWindow
+
     G2D::Run(Logic, render, G, 60, true);
 }
