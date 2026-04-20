@@ -46,7 +46,10 @@ void _G2D::initKeys()
 	keyTable['X'] = keyTable['x'] = Key::X;
 	keyTable['Y'] = keyTable['y'] = Key::Y;
 	keyTable['Z'] = keyTable['z'] = Key::Z;
+	
 	keyTable['\r'] = Key::ENTER;
+	keyTable['\b'] = Key::BACKSPACE;
+
 
 	specialKeyTable[GLUT_KEY_LEFT] = Key::LEFT;
 	specialKeyTable[GLUT_KEY_DOWN] = Key::DOWN;
@@ -67,7 +70,7 @@ void _G2D::initKeys()
 }
 
  
-void startPause();
+
 void endPause();
 
 void _G2D::keyboard(unsigned char key, int x, int y)
@@ -76,17 +79,7 @@ void _G2D::keyboard(unsigned char key, int x, int y)
 	activeKeys[keyTable[key]] = true;
 	keyHit[keyTable[key]] = true;
 
-	if (keyTable[key] == Key::P)
-		if (isPaused)
-		{
-			endPause();
-			isPaused = false;
-		}
-		else
-		{
-			startPause();
-			isPaused = true;
-		}
+	
 }
 
 void _G2D::keyUp(unsigned char key, int x, int y)

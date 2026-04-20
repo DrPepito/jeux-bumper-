@@ -29,7 +29,7 @@ Color ColorFrom255(int r, int g, int b);
 Color ColorFromHex(int hexCode);
 
  
-enum class Key {   Unknown, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
+enum class Key {   Unknown, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,BACKSPACE,
 	               LEFT, RIGHT, UP, DOWN, ENTER, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12   };
 
 enum class Transparency { None, BottomLeft, BottomRight, UpperLeft, UpperRight };
