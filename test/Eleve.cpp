@@ -616,11 +616,7 @@ void Logic(GameData& G)
         G.meteors.end());
 
     // ===== MISSILES =====
-    // Trajectoire courbe a deviation angulaire limitee :
-    //   - initialDir est la direction de tir figee au spawn
-    //   - le missile tourne vers le joueur de turnSpeed rad/frame max
-    //   - mais ne peut jamais depasser maxAngle de son axe initial
-    //   => s'ecarter lateralement suffit pour l'esquiver
+   // on va sur un principe de tete chercheuse , bon quelques zones a verifier ex  parfois trop precis et d autre ne follow pas correctement a voir 
     {
         bool invincible = G.player.dashing || (t - G.player.lastHitTime < G.player.invincDuration);
         for (auto& m : G.missiles)
@@ -676,6 +672,7 @@ void Logic(GameData& G)
     }
 
     // ===== VAGUE SUIVANTE =====
+     // oeee bon la quand on avance un peu trop dans le jeu sa devient quasi trop galere a mod
     {
         int alive = 0;
         for (auto& e : G.enemies) if (e.active) alive++;
@@ -784,6 +781,9 @@ void Logic(GameData& G)
     }
 
     // ===== COLLISION BULLETS / ENEMIES =====
+
+
+// penser a augmenter le radius de notre perso en fonction du sprite 
     for (int i = 0; i < (int)G.bullets.size(); i++)
     {
         if (!G.bullets[i].active) continue;
@@ -856,6 +856,8 @@ void Logic(GameData& G)
         }
 
         // ===== SANDEVISTAN : execution =====
+
+        // franchement c grave stylé le rendu t en pense quoi ??  bref tu me redis si tu trouve ça trop flashy
         if (e.sandevistanActive)
         {
             V2    toTarget = e.sandevistanTarget - e.pos;
